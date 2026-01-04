@@ -9,6 +9,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -136,14 +141,7 @@ public class RegistrationSteps {
     @Then("an error message should appear informing me that last name is required")
     public void anErrorMessageShouldAppearInformingMeThatLastNameIsRequired() throws InterruptedException {
 
-        WebElement errorMessage = driver.findElement(By.cssSelector("span[for='member_lastname']"));
-
-        //Scrollar så att errorMessage syns igen
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", errorMessage);
-
-        //5 sek paus så att man hinner se sista steget innan driver.quit
-        Thread.sleep(10000);
-
+        WebElement errorMessage = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span[for='member_lastname']")));
 
         String actual = errorMessage.getText();
         String expected = "Last Name is required";
@@ -157,8 +155,8 @@ public class RegistrationSteps {
 
     //Scenario 3 - mismatchade lösenord
     //Skippar @given och @and då given är definierad och @and inte behövs då det inte ska gå att slutföra registrering
-    @When("I fill in all required registration fields but use mismatched passwords")
-    public void iFillInAllRequiredRegistrationFieldsButUseMismatchedPasswords() {
+    @When("I fill in all required registration fields but use mismatched passwords {string} and {string}")
+    public void iFillInAllRequiredRegistrationFieldsButUseMismatchedPasswords(String password, String confirmPassword) {
 
         //MEMBER DETAILS
         driver.findElement(By.id("dp")).sendKeys("01/04/1991");
@@ -168,8 +166,8 @@ public class RegistrationSteps {
         driver.findElement(By.id("member_confirmemailaddress")).sendKeys("mala.jallow@live.se");
 
         //CHOOSE YOUR PASSWORD
-        driver.findElement(By.id("signupunlicenced_password")).sendKeys("MyPassWord!");
-        driver.findElement(By.id("signupunlicenced_confirmpassword")).sendKeys("YourPassWord!");
+        driver.findElement(By.id("signupunlicenced_password")).sendKeys(password);
+        driver.findElement(By.id("signupunlicenced_confirmpassword")).sendKeys(confirmPassword);
 
         //WHICH OF THESE BEST DESCRIBE YOUR ROLE/S IN BASKETBALL?
         scrollAndClick(By.cssSelector("label[for='signup_basketballrole_19']"));
@@ -257,7 +255,21 @@ public class RegistrationSteps {
             driver.quit();
         }
 
+
+    //Identiskt scenario & steps till Happy path men med Firefox för multi browser
+    //Säger att Chrome är standard browsern men att köra FirefoxDriver OM den upptäcks
+    @Given("that I am on the registration page using {string}")
+    public void openRegistrationSiteWithBrowser(String browser) {
+        if (browser.equalsIgnoreCase("firefox")) {
+            driver = new FirefoxDriver();
+        } else {
+            driver = new ChromeDriver();
+        }
+
+        driver.get("file:///C:/Users/malaj/Desktop/MVT 2025 - 2027/04 - Testautomatisering och programmering/INLÄMNING 2/Register.html");
+
     }
+}
 
 
 
