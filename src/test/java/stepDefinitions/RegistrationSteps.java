@@ -26,11 +26,14 @@ public class RegistrationSteps {
     }
 
 
+    //SCENARIO 1 - Happy path!
+
     @Given("that I am on the registration page")
     public void openRegistrationSite() {
         driver = new ChromeDriver();
-        driver.get("file:///C:/Users/malaj/Desktop/MVT%202025%20-%202027/04%20-%20Testautomatisering%20och%20programmering/INL%C3%84MNING%202/Register.html");
+        driver.get("file:///C:/Users/malaj/Desktop/MVT 2025 - 2027/04 - Testautomatisering och programmering/INLÄMNING 2/Register.html");
     }
+
 
     @When("I fill in all required registration fields correctly")
     public void fillInRequiredFieldsCorrectly() {
@@ -70,13 +73,10 @@ public class RegistrationSteps {
     }
 
 
-
     @And("I submit the registration form")
     public void klickToSubmitRegistration() {
         //CONFIRM AND JOIN (Knappen för att gå med)
         scrollAndClick(By.name("join"));
-
-
 
     }
 
@@ -95,4 +95,171 @@ public class RegistrationSteps {
         driver.quit();
 
     }
-}
+
+
+    //SCENARIO 2 - Efternamn saknas
+    // Utan @Given då den är identisk. Cucumber matchar från feature-filen då det steget redan finns!
+    @When("I fill in all required registration fields except last name")
+    public void iFillInAllRequiredRegistrationFieldsExceptLastName() {
+        //MEMBER DETAILS
+        driver.findElement(By.id("dp")).sendKeys("01/04/1991");
+        driver.findElement(By.id("member_firstname")).sendKeys("Mala");
+        driver.findElement(By.id("member_emailaddress")).sendKeys("mala.jallow@live.se");
+        driver.findElement(By.id("member_confirmemailaddress")).sendKeys("mala.jallow@live.se");
+
+        //CHOOSE YOUR PASSWORD
+        driver.findElement(By.id("signupunlicenced_password")).sendKeys("MyPassWord!");
+        driver.findElement(By.id("signupunlicenced_confirmpassword")).sendKeys("MyPassWord!");
+
+        //WHICH OF THESE BEST DESCRIBE YOUR ROLE/S IN BASKETBALL?
+        scrollAndClick(By.cssSelector("label[for='signup_basketballrole_19']"));
+
+
+        //ACCOUNT INFORMATION
+        scrollAndClick(By.cssSelector("label[for='sign_up_25']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_26']"));
+
+
+        //COMMUNICATION PREFERENCES
+        scrollAndClick(By.cssSelector("label[for='sign_up_27']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_28']"));
+
+        //CODE OF ETHICS AND CONDUCT (APPLIES TO ALL MEMBERS)
+        //Tvingar till att klicka på elementet
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].click();",
+                driver.findElement(By.cssSelector("label[for='fanmembersignup_agreetocodeofethicsandconduct']"))
+        );
+
+    }
+
+    @Then("an error message should appear informing me that last name is required")
+    public void anErrorMessageShouldAppearInformingMeThatLastNameIsRequired() throws InterruptedException {
+
+        WebElement errorMessage = driver.findElement(By.cssSelector("span[for='member_lastname']"));
+
+        //Scrollar så att errorMessage syns igen
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", errorMessage);
+
+        //5 sek paus så att man hinner se sista steget innan driver.quit
+        Thread.sleep(10000);
+
+
+        String actual = errorMessage.getText();
+        String expected = "Last Name is required";
+
+        assertEquals(expected, actual);
+
+        driver.quit();
+
+    }
+
+
+    //Scenario 3 - mismatchade lösenord
+    //Skippar @given och @and då given är definierad och @and inte behövs då det inte ska gå att slutföra registrering
+    @When("I fill in all required registration fields but use mismatched passwords")
+    public void iFillInAllRequiredRegistrationFieldsButUseMismatchedPasswords() {
+
+        //MEMBER DETAILS
+        driver.findElement(By.id("dp")).sendKeys("01/04/1991");
+        driver.findElement(By.id("member_firstname")).sendKeys("Mala");
+        driver.findElement(By.id("member_lastname")).sendKeys("Jallow Nyström");
+        driver.findElement(By.id("member_emailaddress")).sendKeys("mala.jallow@live.se");
+        driver.findElement(By.id("member_confirmemailaddress")).sendKeys("mala.jallow@live.se");
+
+        //CHOOSE YOUR PASSWORD
+        driver.findElement(By.id("signupunlicenced_password")).sendKeys("MyPassWord!");
+        driver.findElement(By.id("signupunlicenced_confirmpassword")).sendKeys("YourPassWord!");
+
+        //WHICH OF THESE BEST DESCRIBE YOUR ROLE/S IN BASKETBALL?
+        scrollAndClick(By.cssSelector("label[for='signup_basketballrole_19']"));
+
+
+        //ACCOUNT INFORMATION
+        scrollAndClick(By.cssSelector("label[for='sign_up_25']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_26']"));
+
+
+        //COMMUNICATION PREFERENCES
+        scrollAndClick(By.cssSelector("label[for='sign_up_27']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_28']"));
+
+        //CODE OF ETHICS AND CONDUCT (APPLIES TO ALL MEMBERS)
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].click();",
+                driver.findElement(By.cssSelector("label[for='fanmembersignup_agreetocodeofethicsandconduct']"))
+        );
+
+
+    }
+
+    @Then("an error message should appear informing me that the passwords do not match")
+    public void anErrorMessageShouldAppearInformingMeThatThePasswordsDoNotMatch() {
+        WebElement errorMessage = driver.findElement(By.cssSelector("span[for='signupunlicenced_confirmpassword']"));
+
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", errorMessage);
+
+        String actual = errorMessage.getText();
+        String expected = "Password did not match";
+
+        assertEquals(expected, actual);
+
+        driver.quit();
+    }
+
+
+
+
+    //SCENARIO 4 - Terms and conditions är inte godkänt
+    //Tagit bort delen med kod för CODE OF ETHICS AND CONDUCT där T&C ligger
+    @When("I fill in all required registration fields except accepting terms and conditions")
+    public void iFillInAllRequiredRegistrationFieldsExceptAcceptingTermsAndConditions() {
+        //MEMBER DETAILS
+        driver.findElement(By.id("dp")).sendKeys("01/04/1991");
+        driver.findElement(By.id("member_firstname")).sendKeys("Mala");
+        driver.findElement(By.id("member_lastname")).sendKeys("Jallow Nyström");
+        driver.findElement(By.id("member_emailaddress")).sendKeys("mala.jallow@live.se");
+        driver.findElement(By.id("member_confirmemailaddress")).sendKeys("mala.jallow@live.se");
+
+        //CHOOSE YOUR PASSWORD
+        driver.findElement(By.id("signupunlicenced_password")).sendKeys("MyPassWord!");
+        driver.findElement(By.id("signupunlicenced_confirmpassword")).sendKeys("MyPassWord!");
+
+        //WHICH OF THESE BEST DESCRIBE YOUR ROLE/S IN BASKETBALL?
+        scrollAndClick(By.cssSelector("label[for='signup_basketballrole_19']"));
+
+
+        //ACCOUNT INFORMATION
+        scrollAndClick(By.cssSelector("label[for='sign_up_25']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_26']"));
+
+
+        //COMMUNICATION PREFERENCES
+        scrollAndClick(By.cssSelector("label[for='sign_up_27']"));
+        scrollAndClick(By.cssSelector("label[for='sign_up_28']"));
+
+    }
+
+
+
+    @Then("an error message should appear informing me that terms and conditions must be accepted")
+    public void errorMessageInformingMeThatTermsAndConditionsMustBeAccepted() {
+
+            WebElement errorMessage = driver.findElement(By.cssSelector("span[for='AgreeToCodeOfEthicsAndConduct']"));
+
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", errorMessage);
+
+            String actual = errorMessage.getText();
+            String expected = "You must confirm that you have read, understood and agree to the Code of Ethics and Conduct";
+
+            assertEquals(expected, actual);
+
+            driver.quit();
+        }
+
+    }
+
+
+
+
+
